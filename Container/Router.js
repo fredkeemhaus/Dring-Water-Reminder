@@ -14,6 +14,7 @@ import {
 import GettingStarted from './main/GettingStarted';
 import Home from './main/Home';
 import Start from './Start';
+import UserInfo from './UserInfo';
 
 const AppRouter = () => {
   return (
@@ -22,8 +23,9 @@ const AppRouter = () => {
         <Lightbox>
           <Stack key="root" hideNavBar>
             <Scene key={'gettingStarted'} component={GettingStarted} />
-            <Scene key={'start'} component={Start} initial />
-            <Scene key={'home'} component={Home} />
+            <Scene key={'start'} component={Start} />
+            <Scene key={'home'} component={Home}  initial />
+            <Scene key={'userInfo'} component={UserInfo} />
           </Stack>
         </Lightbox>
       </Overlay>

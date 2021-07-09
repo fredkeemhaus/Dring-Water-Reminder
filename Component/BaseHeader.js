@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import styled from 'styled-components';
+import { Entypo } from '@expo/vector-icons';
+import { Actions } from 'react-native-router-flux';
 
 const HeaderComponent = styled.View`
   display: flex;
@@ -22,17 +24,23 @@ const HeaderTitle = styled.Text`
 const BaseHeader = (props) => {
   const {
     title,
+    closed
   } = props;
+  
   return (
     <HeaderComponent>
       <View>
-        <Text>1</Text>
+        {closed && (
+          <TouchableOpacity style={{height: '100%', display: 'flex', justifyContent: 'center', flex: 1}} onPress={() => Actions.pop()}>
+            <Entypo name="chevron-small-left" size={24} color="black" />
+          </TouchableOpacity>
+        )}
       </View>
       <View>
         <HeaderTitle>{title}</HeaderTitle>
       </View>
       <View>
-        <Text>1</Text>
+        <Entypo name="chevron-small-left" size={24} color="white" />
       </View>
     </HeaderComponent>
   )

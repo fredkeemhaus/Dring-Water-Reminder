@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import {View, Text, SafeAreaView, TouchableOpacity, Switch, Button} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import styled from 'styled-components';
 import BaseHeader from '../Component/BaseHeader';
 import { Entypo } from '@expo/vector-icons';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import _ from 'lodash';
 import moment from 'moment';
+import uuid from 'react-native-uuid';
 
 import * as Notifications from "expo-notifications"
 import * as Permissions from "expo-permissions"
+import { Actions } from 'react-native-router-flux';
 
-const Container = styled.View`
+const Container = styled.ScrollView`
   padding: 0 20px;
 `
 
@@ -59,24 +62,40 @@ const Start = () => {
 
   useEffect(() => {
     // Permission for iOS
-    Permissions.getAsync(Permissions.NOTIFICATIONS)
-      .then(statusObj => {
-        // Check if we already have permission
-        if (statusObj.status !== "granted") {
-          // If permission is not there, ask for the same
-          return Permissions.askAsync(Permissions.NOTIFICATIONS)
-        }
-        return statusObj
-      })
-      .then(statusObj => {
-        // If permission is still not given throw error
-        if (statusObj.status !== "granted") {
-          throw new Error("Permission not granted")
-        }
-      })
-      .catch(err => {
-        return null
-      })
+    if(isEnabled) {
+      Permissions.getAsync(Permissions.NOTIFICATIONS)
+        .then(statusObj => {
+          // Check if we already have permission
+          if (statusObj.status !== "granted") {
+            // If permission is not there, ask for the same
+            return Permissions.askAsync(Permissions.NOTIFICATIONS)
+          }
+          return statusObj
+        })
+        .then(statusObj => {
+          // If permission is still not given throw error
+          if (statusObj.status !== "granted") {
+            throw new Error("Permission not granted")
+          }
+        })
+        .catch(err => {
+          return null
+        })
+    }
+  }, [])
+
+  useEffect(() => {
+    const isCheckPermission = async () => {
+      try {
+        const result = await AsyncStorage.getItem("switchEnabled");
+        console.log(result,'-')
+        setIsEnabled(JSON.parse(result))
+      } catch(e) {
+        console.log(e);
+      }
+    }
+
+    isCheckPermission();
   }, [])
 
   const triggerLocalNotificationHandler = () => {
@@ -89,7 +108,20 @@ const Start = () => {
     })
   }
   
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+  const toggleSwitch = async () => {
+
+    setIsEnabled(previousState  => !previousState)
+
+    await setNotiSwitch();
+  };
+
+  const setNotiSwitch = async () => {
+    try {
+      await AsyncStorage.setItem("switchEnabled", JSON.stringify(!isEnabled));
+    } catch(e) {
+      console.log(e);
+    }
+  }
 
   const showDatePicker = (type) => {
     setTimePickerVisibility(true);
@@ -112,23 +144,23 @@ const Start = () => {
 
   return (
     <SafeAreaView style={{flex: 1}}>
-      <BaseHeader title={'정보 입력'} />
+      <BaseHeader title={'정보 입력'} closed />
       <Container>
-        <SpaceBetweenTouch>
+        <SpaceBetweenTouch onPress={() => Actions.push('userInfo')}>
           <BoldText>
             기준량 설정 
           </BoldText>
           <Entypo name="chevron-small-right" size={24} color="black" />
         </SpaceBetweenTouch>
-        <SpaceBetweenView>
+        <SpaceBetweenTouch>
           <BoldText>
             알림 설정&nbsp;&nbsp;🔔
           </BoldText>
-        </SpaceBetweenView>
+        </SpaceBetweenTouch>
         <SpaceBetweenView>
-          <RegularText>
+          <BoldText>
             알림
-          </RegularText>
+          </BoldText>
           <Switch
             trackColor={{ false: "#767577", true: "#81b0ff" }}
             thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}
@@ -140,44 +172,44 @@ const Start = () => {
         {isEnabled ? (
           <>
             <SpaceBetweenView>
-              <RegularText>
+              <BoldText>
                 기상 시간 ☀️
-              </RegularText>
+              </BoldText>
               <TouchableOpacity onPress={() => showDatePicker(0)}>
                 {_.isNil(isWakeUpTime) ? (
-                  <RegularText style={{color: '#81b0ff'}}>
+                  <BoldText style={{color: '#81b0ff'}}>
                     설정 
-                  </RegularText>
+                  </BoldText>
                 ) : (
-                  <RegularText>
+                  <BoldText>
                     {isWakeUpTime}
-                  </RegularText>
+                  </BoldText>
                 )}
               </TouchableOpacity>
             </SpaceBetweenView>
             <SpaceBetweenView>
-              <RegularText>
+              <BoldText>
                 취침 시간 🌙
-              </RegularText>
+              </BoldText>
               <TouchableOpacity onPress={() => showDatePicker(1)}>
                 {_.isNil(isSleepTime) ? (
-                  <RegularText style={{color: '#81b0ff'}}>
+                  <BoldText style={{color: '#81b0ff'}}>
                     설정 
-                  </RegularText>
+                  </BoldText>
                 ) : (
-                  <RegularText>
+                  <BoldText>
                     {isSleepTime}
-                  </RegularText>
+                  </BoldText>
                 )}
               </TouchableOpacity>
             </SpaceBetweenView>
             <SpaceBetweenView>
-              <RegularText>
+              <BoldText>
                 알림 주기 ⏰
-              </RegularText>
-              <RegularText>
+              </BoldText>
+              <BoldText>
                 알림
-              </RegularText>
+              </BoldText>
             </SpaceBetweenView>
             <View style={{marginTop: 10, display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
               <Button
